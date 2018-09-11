@@ -29,11 +29,11 @@ int main(int argc, char** argv) {
   printf(1,"stdout should now be gray again\n");
   printf(2,"stderr should now be gray again\n");
 
+  printf(1,"Try typing something, it ought to come out colored: ");
   if(ioctl(1,1,0x1)<0) {
     printf(1,"ioctl to set global console color failed\n");
     exit();
   }
-  printf(1,"Try typing something, it ought to come out colored: ");
   char buf[100];
   gets(buf,100);
 
