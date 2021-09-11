@@ -346,6 +346,7 @@ sys_open(void)
   f->off = 0;
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+  f->dev_payload = 0;
   return fd;
 }
 
