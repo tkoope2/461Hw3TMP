@@ -15,7 +15,12 @@ int main(int argc, char** argv) {
   printf(1,"Printing pretty on stdout.\n");                 //Hits
   printf(2,"This is stderr output - should still be gray.\nTrying something more interesting...\n\n");//Hits
   
+/*
+The previous calls to fd 1 & 2 are unmodified by an iotcl call, they should have the default value by init
+of 0x0700; meaning they should display color before update. Currently failing that portion in console.c guap(you know what i mean)
 
+Console write is meant to call conspuc in the intances of fd->color == 0x0700 which is true by default
+*/
 
   
   unsigned int i=0;

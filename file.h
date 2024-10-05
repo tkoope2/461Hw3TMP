@@ -10,6 +10,7 @@ struct file {
   void * dev_payload;
   //Modify to hold color value
   int color;
+  
 };
 
 

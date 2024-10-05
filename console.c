@@ -184,7 +184,12 @@ cgaputc(int c, int color)
   void
 consputc(int c)
 {
-  int defaultColor = 0x0700;
+
+  //! Ask TA
+  //? I understand the layout of the 16bit in terms of color But why does this affect it
+  //? Is it because when I do the shift later on it shifts the light gray values out
+  //? Instead shifting the black code into the text and shifting 00 into the background making for invisble text
+  int defaultColor = 0x07;
 
   if (panicked) {
     cli();
@@ -348,9 +353,10 @@ consolewrite(struct file *f, char *buf, int n)
 {
   int i;
   acquire(&cons.lock);
-  for(i = 0; i < n; i++)
+  for(i = 0; i < n; i++){
     if(f->color != 0x0700) consputcColor(buf[i] & 0xff, f->color);
     else consputc(buf[i] & 0xff);
+  }
   release(&cons.lock);
 
   return n;
