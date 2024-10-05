@@ -8,6 +8,8 @@ struct file {
   uint off;
 
   void * dev_payload;
+  //Modify to hold color value
+  int color;
 };
 
 

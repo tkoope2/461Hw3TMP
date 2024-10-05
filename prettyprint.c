@@ -3,16 +3,21 @@
 
 char *hoarequote = "There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult.\n\n- C.A.R. Hoare (British computer scientist, winner of the 1980 Turing Award)\n\n";
 
+
 int main(int argc, char** argv) {
-  printf(1,"First off, printing in regular color.\n");
-  printf(1,"Now changing stdout color.\n");
+  printf(1,"First off, printing in regular color.\n");      //Hits
+  printf(1,"Now changing stdout color.\n");                 //Hits
   if(ioctl(1,0,3)<0) // 1 for stdout
   {
-    printf(2,"ioctl failed changing color\n");
+    printf(2,"ioctl failed changing color\n");              //Missed.
     exit();
   }
-  printf(1,"Printing pretty on stdout.\n");
-  printf(2,"This is stderr output - should still be gray.\nTrying something more interesting...\n\n");
+  printf(1,"Printing pretty on stdout.\n");                 //Hits
+  printf(2,"This is stderr output - should still be gray.\nTrying something more interesting...\n\n");//Hits
+  
+
+
+  
   unsigned int i=0;
   unsigned char color=0x01;  
   for(i=0;i<strlen(hoarequote);i++) {
@@ -23,6 +28,10 @@ int main(int argc, char** argv) {
     printf(2,"%c",hoarequote[i]&0xff);
     color++;
   }
+
+
+
+
 
   ioctl(2,0,0x7);
   ioctl(1,0,0x7);

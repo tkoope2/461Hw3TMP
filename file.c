@@ -34,6 +34,7 @@ filealloc(void)
   for(f = ftable.file; f < ftable.file + NFILE; f++){
     if(f->ref == 0){
       f->ref = 1;
+      f->color = 0x0700;
       release(&ftable.lock);
       return f;
     }

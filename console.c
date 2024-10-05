@@ -149,7 +149,7 @@ panic(char *s)
 static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
 
   static void
-cgaputc(int c)
+cgaputc(int c, int color)
 {
   int pos;
 
@@ -164,7 +164,7 @@ cgaputc(int c)
   else if (c == BACKSPACE) {
     if (pos > 0) --pos;
   } else
-    crt[pos++] = (c&0xff) | 0x0700;  // gray on black
+    crt[pos++] = (c&0xff) | (color << 8);  // Colors in upper 8 bits
 
   if ((pos/80) >= 24){  // Scroll up.
     memmove(crt, crt+80, sizeof(crt[0])*23*80);
@@ -176,12 +176,16 @@ cgaputc(int c)
   outb(CRTPORT+1, pos>>8);
   outb(CRTPORT, 15);
   outb(CRTPORT+1, pos);
-  crt[pos] = ' ' | 0x0700;
+  crt[pos] = ' ' | (color << 8);
 }
 
+
+//Default condition not overloaded
   void
 consputc(int c)
 {
+  int defaultColor = 0x0700;
+
   if (panicked) {
     cli();
     for(;;)
@@ -192,8 +196,30 @@ consputc(int c)
     uartputc('\b'); uartputc(' '); uartputc('\b');
   } else
     uartputc(c);
-  cgaputc(c);
+  cgaputc(c, defaultColor);
 }
+
+
+//Function meant to interperate color options
+void consputcColor(int c, int color){
+  if(panicked){
+    cli();
+    for(;;)
+      hlt();
+  }
+
+   if (c == BACKSPACE) {
+    uartputc('\b'); uartputc(' '); uartputc('\b');
+  } else
+    uartputc(c);
+  cgaputc(c, color);
+}
+
+
+
+
+
+
 
 #define INPUT_BUF 128
 struct {
@@ -285,10 +311,35 @@ consoleread(struct file *f, char *dst, int n)
   return target - n;
 }
 
+/*
+If we fail return -1
+if passed return 0 >
+*/
+/*
+! Need to validate the stderr & console input are not color changed. 
+  ? Would this get handled by confirming what type of file we are writing to. 
+*/
+/*
+* 0; stdin, 1; stdout, 2; stderr
+*/
 int
 consoleioctl(struct file *f, int param, int value)
 {
-  cprintf("Got unknown console ioctl request. %d = %d\n",param,value);
+  //cprintf("Got unknown console ioctl request. %d = %d\n",param,value);
+  
+  //Check if console write; if not bail out of color printing
+  if(f->type != FD_INODE){
+    cprintf("Not writing to the console\n");
+    return -1;
+  }
+
+  //* We are correctly identifying
+  if(param == 0){
+    f->color = value & 0xff;
+    return 0;
+  }
+
+  cprintf("Got unkown ioctl request. %d = %d\n", param, value);
   return -1;
 }
 
@@ -296,10 +347,10 @@ int
 consolewrite(struct file *f, char *buf, int n)
 {
   int i;
-
   acquire(&cons.lock);
   for(i = 0; i < n; i++)
-    consputc(buf[i] & 0xff);
+    if(f->color != 0x0700) consputcColor(buf[i] & 0xff, f->color);
+    else consputc(buf[i] & 0xff);
   release(&cons.lock);
 
   return n;
